@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import json
 import pickle
-import tensorflow as tf
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import load_model
 from collections import Counter
