@@ -182,14 +182,14 @@ with st.form(key='form_predict'):
         
         # Adjust prediction for positive words
         st.write(f"Komentar: {text_input}")
-        st.write(f"Prediksi Awal: {input_prediction:.2f}%")
+        # st.write(f"Prediksi Awal: {input_prediction:.2f}%")
         input_prediction = adjust_prediction_for_positive_words(input_prediction, text_input, positive_keywords)
         
         input_label = label_prediction(input_prediction)
         input_prediction_percent = input_prediction * 100
 
         # Display the result
-        st.write(f"Prediksi Akhir: {input_prediction_percent:.2f}%")
+        st.write(f"Hasil Prediksi: {input_prediction_percent:.2f}%")
         st.write(f"Label: {input_label}")
 
         # Display keyword frequencies in the input text
