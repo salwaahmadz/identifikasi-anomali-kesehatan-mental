@@ -125,6 +125,10 @@ with col2:
 
 # FORM INPUT PENGGUNA
 st.subheader("Masukan Komentar Yang Ingin Diidentifikasi (Menggunakan Bahasa Inggris)")
+
+if 'histories' not in st.session_state:
+    st.session_state.histories = []
+
 with st.form(key='form_predict'):
     text_input = st.text_input(label='Masukkan Komentar')
     submit_button = st.form_submit_button(label='Submit')
@@ -154,6 +158,18 @@ with st.form(key='form_predict'):
                 input_keywords = get_keyword_frequencies([text_input], positive_keywords)
                 st.write("Kata Kunci positif dalam Komentar yang Dimasukkan:")
                 st.write(pd.DataFrame(input_keywords, columns=['Kata Kunci', 'Frekuensi']))
+
+            st.session_state.histories.append({
+                'Komentar': text_input,
+                'Prediksi': input_prediction,
+                'Prediksi (%)': input_prediction_percent,
+                'Label': input_label
+            })
+
+if st.session_state.histories:
+    st.subheader("History Identifikasi Komentar")
+    df_history = pd.DataFrame(st.session_state.histories)
+    st.write(df_history)
 
 # DATA TEST
 st.subheader("Contoh Dengan Data Test Komentar Dari YouTube")
