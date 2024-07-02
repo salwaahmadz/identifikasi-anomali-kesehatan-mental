@@ -48,9 +48,9 @@ def get_keyword_frequencies(texts, keywords):
 def adjust_prediction_for_positive_words(prediction, text, positive_keywords):
     words = preprocess_text(text)
     positive_count = sum(1 for word in words if word in positive_keywords)
-    # MENYESUKAN PREDIKSI UNTUK KATA KUNCI POSITIF
+    # Adjust the prediction based on the number of positive words found
     if positive_count > 0:
-        adjustment = positive_count * 0.02
+        adjustment = positive_count * 0.02  # Example adjustment factor
         prediction = max(0, prediction - adjustment)
     return prediction
 
@@ -99,7 +99,6 @@ positive_keywords = [
 
 model, tokenizer = load_model_and_tokenizer()
 data, data2 = load_data()
-# model.summary()
 
 # DATASET
 st.header("APLIKASI IDENTIFIKASI ANOMALI KESEHATAN MENTAL PADA KOMENTAR")
@@ -190,27 +189,28 @@ with col1:
 with col2:
     st.write(positif_keywords_frequencies_df)
 
-if 'predictions' not in st.session_state:
+# Tombol untuk memulai identifikasi data test
+st.subheader("Apakah Anda Ingin Melihat Contoh Identifikasi Dari Data Test?")
+if st.button("Ya, identifikasi data test"):
     with st.spinner("Identifikasi dan Prediksi Data Test Komentar..."):
         sequence = tokenizer.texts_to_sequences(datatest['Komentar'])
         padded = pad_sequences(sequence, maxlen=537)
         predictions = model.predict(padded)
         st.session_state['predictions'] = predictions
 else:
-    predictions = st.session_state['predictions']
+    predictions = st.session_state.get('predictions', None)
 
-df_predictions = pd.DataFrame({'Komentar': comments2, 'Label': predictions.flatten(), 'Prediksi': predictions.flatten()})
+if predictions is not None:
+    df_predictions = pd.DataFrame({'Komentar': comments2, 'Label': predictions.flatten(), 'Prediksi': predictions.flatten()})
+    df_predictions['Prediksi'] = df_predictions.apply(
+        lambda row: adjust_prediction_for_positive_words(row['Prediksi'], row['Komentar'], positive_keywords), axis=1
+    )
+    df_predictions['Label'] = df_predictions['Prediksi'].apply(label_prediction)
+    df_predictions['Prediksi (%)'] = df_predictions['Prediksi'] * 100
+    st.subheader("Hasil Identifikasi Data Test Komentar")
+    st.write(df_predictions)
 
-df_predictions['Prediksi'] = df_predictions.apply(
-    lambda row: adjust_prediction_for_positive_words(row['Prediksi'], row['Komentar'], positive_keywords), axis=1
-)
-
-df_predictions['Label'] = df_predictions['Prediksi'].apply(label_prediction)
-df_predictions['Prediksi (%)'] = df_predictions['Prediksi'] * 100
-st.subheader("Hasil Identifikasi Data Test Komentar")
-st.write(df_predictions)
-
-st.subheader("Chart Hasil Identifikasi Berdasarkan Label")
-label_counts = df_predictions.groupby('Label').size().reset_index(name='Jumlah')
-st.bar_chart(label_counts.set_index('Label'))
-st.write(label_counts)
+    st.subheader("Chart Hasil Identifikasi Berdasarkan Label")
+    label_counts = df_predictions.groupby('Label').size().reset_index(name='Jumlah')
+    st.bar_chart(label_counts.set_index('Label'))
+    st.write(label_counts)
